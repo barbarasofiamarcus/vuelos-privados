@@ -189,6 +189,9 @@
   .field label{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);margin-bottom:7px}
   .field input{width:100%;padding:12px 14px;border:1px solid var(--line);background:#fff;font-family:'Manrope',sans-serif;font-size:14px;color:var(--ink);border-radius:2px}
   .field input:focus{outline:none;border-color:var(--sky-deep)}
+  .radio-group{display:flex;gap:20px;padding-top:8px}
+  .radio-option{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink);cursor:pointer;font-weight:400}
+  .radio-option input{width:auto;accent-color:var(--sky-deep)}
 
   .aircraft-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:52px}
   @media(max-width:760px){.aircraft-grid{grid-template-columns:1fr}}
@@ -342,12 +345,27 @@
           <input id="qDestino" type="text" placeholder="Ej: Neuquén" required>
         </div>
         <div class="field">
-          <label for="qFecha">Fecha</label>
+          <label for="qFecha">Fecha de salida</label>
           <input id="qFecha" type="date">
         </div>
         <div class="field">
           <label for="qPax">Pasajeros</label>
           <input id="qPax" type="number" min="1" max="20" placeholder="Ej: 3">
+        </div>
+        <div class="field" style="grid-column:span 2">
+          <label>Tipo de viaje</label>
+          <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="tipoViaje" value="Solo ida" checked onchange="toggleVuelta()"> Solo ida</label>
+            <label class="radio-option"><input type="radio" name="tipoViaje" value="Ida y vuelta" onchange="toggleVuelta()"> Ida y vuelta</label>
+          </div>
+        </div>
+        <div class="field" id="fechaVueltaField" style="grid-column:span 2;display:none">
+          <label for="qFechaVuelta">Fecha de vuelta</label>
+          <input id="qFechaVuelta" type="date">
+        </div>
+        <div class="field" style="grid-column:1/-1">
+          <label for="qInfo">Información adicional</label>
+          <input id="qInfo" type="text" placeholder="Horarios, pedidos especiales, dudas...">
         </div>
       </form>
       <div class="hero-cta" style="margin-top:6px">
@@ -457,18 +475,29 @@
     document.getElementById('qDestino').focus();
   }
 
+  function toggleVuelta(){
+    const tipo = document.querySelector('input[name="tipoViaje"]:checked').value;
+    document.getElementById('fechaVueltaField').style.display = (tipo === 'Ida y vuelta') ? 'flex' : 'none';
+  }
+
   function sendQuote(e){
     e.preventDefault();
     const origen = document.getElementById('qOrigen').value.trim();
     const destino = document.getElementById('qDestino').value.trim();
     const fecha = document.getElementById('qFecha').value;
     const pax = document.getElementById('qPax').value;
+    const tipoViaje = document.querySelector('input[name="tipoViaje"]:checked').value;
+    const fechaVuelta = document.getElementById('qFechaVuelta').value;
+    const info = document.getElementById('qInfo').value.trim();
 
     let msg = 'Hola, quiero cotizar un vuelo.';
     if(origen) msg += ' Origen: ' + origen + '.';
     if(destino) msg += ' Destino: ' + destino + '.';
-    if(fecha) msg += ' Fecha: ' + fecha + '.';
+    if(fecha) msg += ' Fecha de salida: ' + fecha + '.';
+    msg += ' Tipo de viaje: ' + tipoViaje + '.';
+    if(tipoViaje === 'Ida y vuelta' && fechaVuelta) msg += ' Fecha de vuelta: ' + fechaVuelta + '.';
     if(pax) msg += ' Pasajeros: ' + pax + '.';
+    if(info) msg += ' Información adicional: ' + info + '.';
 
     const url = 'https://wa.me/5490000000000?text=' + encodeURIComponent(msg);
     window.open(url, '_blank');
